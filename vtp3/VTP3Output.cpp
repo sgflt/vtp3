@@ -139,6 +139,7 @@ int VTP3::send(Connection const& connection, const void *data, size_t size)
 	for( int i = 0; i < 20; i++)//XXX debug
 	if ( sendto(connection.sockfd, buf, data_size, 0, reinterpret_cast<sockaddr*>(&socket_address), sizeof(sockaddr_ll)) < 0 ) {
 		std::perror("Send error");
+		return -1;
 	}
 
 	return 0;

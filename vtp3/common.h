@@ -54,37 +54,6 @@ namespace VTP3 {
 		uint8_t doman_name[MAX_DOMAIN_LENGTH];
 	};
 
-	/*struct SummaryAdvertPacket {
-		VTP3CommonHeader header;
-		uint32_t revision;
-		uint32_t updater_id;
-		uint8_t update_timestamp[TIMESTAMP_LENGTH];
-		uint8_t md5[MD5_LENGTH];
-
-		int send(Connection const& connection);
-	};*/
-
-	struct SubsetAdvertPacket {
-		VTP3CommonHeader header;
-	};
-
-	struct AdvertRequestPacket {
-		VTP3CommonHeader header;
-		uint32_t start;
-	};
-
-	struct VlanInfo {
-		uint8_t length;
-		uint8_t status;
-		uint8_t type;
-		uint8_t name_length;
-		uint16_t isl_vlan_id;
-		uint16_t mtu_size;
-		uint32_t index;
-		//std::unique_ptr<char> name; /* Padded with zeros to Multiple of 4 Bytes */
-		/* VlanInfoExtended */
-	};
-
 	struct VlanInfoExtended {
 			uint8_t type; 	/* Captured packets have this field 1 byte long... but cisco says it should be 2 */
 			uint8_t length; /* this too */
