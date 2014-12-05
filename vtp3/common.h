@@ -12,13 +12,12 @@
 #include <cstdint>
 #include <memory>
 
+
 namespace VTP3 {
 
 #define MAX_DOMAIN_LENGTH 32
 #define ORG_CODE_LENGTH 3
 #define MAC_LENGTH 6
-#define TIMESTAMP_LENGTH 12
-#define MD5_LENGTH 16
 
 
 	struct EthernetHeader {
@@ -30,12 +29,7 @@ namespace VTP3 {
 		};
 	};
 
-	struct Vlan8021Q {
-		uint16_t vlan_proto_id;
-		uint16_t pcp:3;
-		uint16_t cfi:1;
-		uint16_t vlan_id:12;
-	};
+
 
 	struct LLCHeader {
 		uint8_t dsap;
@@ -45,6 +39,9 @@ namespace VTP3 {
 		uint16_t pid; /* protocol id */
 	};
 
+	/**
+	 * Can be memcped, because all members are made of bytes
+	 */
 	struct VTP3CommonHeader {
 		uint8_t version;
 		uint8_t code;
@@ -57,13 +54,15 @@ namespace VTP3 {
 		uint8_t doman_name[MAX_DOMAIN_LENGTH];
 	};
 
-	struct SummaryAdvertPacket {
+	/*struct SummaryAdvertPacket {
 		VTP3CommonHeader header;
 		uint32_t revision;
 		uint32_t updater_id;
 		uint8_t update_timestamp[TIMESTAMP_LENGTH];
 		uint8_t md5[MD5_LENGTH];
-	};
+
+		int send(Connection const& connection);
+	};*/
 
 	struct SubsetAdvertPacket {
 		VTP3CommonHeader header;
@@ -93,7 +92,6 @@ namespace VTP3 {
 	};
 
 }
-
 
 
 #endif /* COMMON_H_ */

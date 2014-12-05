@@ -12,16 +12,15 @@
 #include <memory>
 
 #include "common.h"
+#include "Connection.h"
 
 namespace VTP3
 {
-	const std::shared_ptr<VTP3::EthernetHeader> ethernet_header(
+	std::shared_ptr<VTP3::EthernetHeader> ethernet_header(
 			std::string const& if_name, uint8_t dst_mac[MAC_LENGTH], const int sockfd);
 
-	int send(
-			int sockfd, std::shared_ptr<EthernetHeader> ethernet_header,
-			SummaryAdvertPacket const& packet, std::string const& if_name);
-
+	void init_header(LLCHeader* llc);
+	int send(Connection const& connection, const void *data, size_t size);
 	int socket(void);
 
 } /* namespace VTP3 */
