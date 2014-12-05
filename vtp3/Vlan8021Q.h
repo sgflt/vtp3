@@ -17,8 +17,8 @@ namespace VTP3
 
 	struct Vlan8021Q {
 		union {
-				uint32_t tci;
-				uint8_t bytearray[4];
+				uint16_t tci;
+				uint8_t bytearray[2];
 		};
 		union {
 				uint16_t length;

@@ -96,7 +96,7 @@ int VTP3::send(Connection const& connection, const void *data, size_t size)
 			eth_size + vlan8021Q_size + llc_size :
 			eth_size + llc_size;
 	const off_t llc_offset = has_vlan ?
-			eth_size + vlan8021Q_size :
+			eth_size + vlan8021Q_size:
 			eth_size;
 
 	const size_t data_size = eth_size + vlan8021Q_size + llc_size + size;
@@ -126,17 +126,15 @@ int VTP3::send(Connection const& connection, const void *data, size_t size)
 			htons( data_size - eth_size ); /* set length of 802.3 payload */
 
 
-	init_header( llc );
 
 	if ( has_vlan ) {
-		connection.vlan8021Q_header->length = data_size - llc_offset;
+		connection.vlan8021Q_header->length = llc_size + size;
 		vlan8021Q->pack( connection.vlan8021Q_header.get() );
 	}
 
-	std::memcpy(buf + data_offset, data, size);
+	init_header( llc );
 
-	std::clog << "xxx " << sizeof(Vlan8021Q)<<std::endl;
-	std::clog << "has vlan:  " << (has_vlan ? "true" : "false")<<std::endl;
+	std::memcpy(buf + data_offset, data, size);
 
 	for( int i = 0; i < 20; i++)//XXX debug
 	if ( sendto(connection.sockfd, buf, data_size, 0, reinterpret_cast<sockaddr*>(&socket_address), sizeof(sockaddr_ll)) < 0 ) {
