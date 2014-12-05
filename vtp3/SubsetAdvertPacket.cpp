@@ -48,7 +48,7 @@ int SubsetAdvertPacket::send(Connection const& connection, std::vector<std::shar
 
 		offset += sizeof(VlanInfoData); /* size of static members of VlanInfo */
 
-		std::memset(buf + offset, 0, vlan->data.name_length);
+		std::memset(buf + offset, 0, vlan->name_size());
 		std::memcpy(buf + offset, vlan->name.get(),  vlan->data.name_length);
 
 		offset += vlan->name_size();
