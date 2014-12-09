@@ -27,8 +27,8 @@
 
 /**
  * Get ethernet header for destination MAC address and interface name
- * @param if_name
- * @param dst_mac
+ * @param if_name name of interface. for example "eth0"
+ * @param dst_mac destination mac address
  * @param sockfd
  * @return
  */
@@ -76,8 +76,8 @@ void VTP3::init_header(LLCHeader* llc)
 }
 
 /**
- * Send VTP summary advert on socket.
- * @param sockfd
+ * Send data (VTP3 packets) on socket.
+ * @param sockfd opened socket
  * @param ethernet_header
  * @param packet
  * @param if_name
@@ -109,6 +109,7 @@ int VTP3::send(Connection const& connection, const void *data, size_t size)
 	std::memset(&ifr, 0, sizeof(ifreq));
 	std::strncpy(ifr.ifr_name, connection.if_name.c_str(), IFNAMSIZ - 1);
 
+	/* Choose dynamically outgoing interface */
 	if ( ioctl(connection.sockfd, SIOCGIFINDEX, &ifr) < 0 ) {
 	    std::perror("Cannot find index of interface");
 	}
