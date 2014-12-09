@@ -16,21 +16,11 @@
 namespace VTP3 {
 
 #define ORG_CODE_LENGTH 3
-#define MAC_LENGTH 6
 
 	enum MessageType {
 		SMMARY_ADVERT = 0x01,
 		SUBSET_ADVERT = 0x02,
 		ADVERT_REQUEST = 0x03
-	};
-
-	struct EthernetHeader {
-		uint8_t dst_mac[MAC_LENGTH];
-		uint8_t src_mac[MAC_LENGTH];
-		union {
-			uint16_t type;
-			uint16_t length;
-		};
 	};
 
 
