@@ -11,6 +11,7 @@
 
 #include "common.h"
 #include "Connection.h"
+#include "VTP3CommonHeader.h"
 
 namespace VTP3
 {

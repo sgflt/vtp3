@@ -11,6 +11,7 @@
 #include <cstring>
 #include <arpa/inet.h>
 
+#include "VTP3CommonHeader.h"
 #include "VTP3Output.h"
 
 using namespace VTP3;

@@ -15,6 +15,7 @@
 #include <arpa/inet.h>
 
 #include "common.h"
+#include "VTP3CommonHeader.h"
 #include "VlanInfo.h"
 #include "Connection.h"
 

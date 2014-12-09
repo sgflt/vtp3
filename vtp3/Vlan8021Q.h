@@ -10,6 +10,7 @@
 #define VLAN8021Q_H_
 
 #include <cstdint>
+#include <iostream>
 
 
 namespace VTP3
@@ -28,10 +29,16 @@ namespace VTP3
 
 		void pack(Vlan8021Q const* vlan);
 
+		uint8_t get_pcp(void) const;
+		uint8_t get_cfi(void) const;
+		uint16_t get_vlan_id(void) const;
+
 		uint8_t set_pcp(uint8_t pcp); /* 3b, PCP - Priority code point */
 		uint8_t set_cfi(uint8_t cfi); /* 1b, CFI (also called DEI) */
 		uint16_t set_vlan_id(uint16_t vlan_id); /* 12bit, VID - VLAN identifier (to which VLAN the frame belongs) */
 	};
+
+	std::ostream& operator<<(std::ostream& os, Vlan8021Q const& vlan);
 
 } /* namespace VTP3 */
 
