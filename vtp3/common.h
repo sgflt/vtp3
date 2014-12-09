@@ -30,13 +30,13 @@ namespace VTP3 {
 	};
 
 
-
+	/* SNAP encapsulated in LLC */
 	struct LLCHeader {
-		uint8_t dsap;
-		uint8_t ssap;
-		uint8_t ctrl;
-		uint8_t org_code[ORG_CODE_LENGTH];
-		uint16_t pid; /* protocol id */
+		uint8_t dsap;	/* SNAP, 1B field*/
+		uint8_t ssap;	/* SNAP, 1B field*/
+		uint8_t ctrl;	/* SNAP, 1B field*/
+		uint8_t org_code[ORG_CODE_LENGTH];	/* SNAP, 3B field called OUI - organizationally unique identifier - cisco */
+		uint16_t pid; /* protocol id */		/* SNAP, 2B field called TYPE - 0x2003 for VTP */
 	};
 
 	/**
@@ -47,11 +47,11 @@ namespace VTP3 {
 		uint8_t code;
 		union {
 			uint8_t followers;
-			uint8_t sequence_number;
+			uint8_t sequence_nr;
 			uint8_t reserved;
 		};
-		uint8_t domain_length;
-		uint8_t doman_name[MAX_DOMAIN_LENGTH];
+		uint8_t domain_len;
+		uint8_t domain_name[MAX_DOMAIN_LENGTH];
 	};
 
 	struct VlanInfoExtended {

@@ -23,7 +23,7 @@ namespace VTP3
 
 	struct SubsetAdvertPacket {
 		VTP3CommonHeader header;
-		uint32_t revision;
+		uint32_t revision_nr;
 
 		int send(Connection const& connection, std::vector<std::shared_ptr<VlanInfo>> vlans);
 	};

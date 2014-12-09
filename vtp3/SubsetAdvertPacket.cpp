@@ -33,7 +33,7 @@ int SubsetAdvertPacket::send(Connection const& connection, std::vector<std::shar
 
 	std::memcpy(buf, &this->header, sizeof(this->header));
 	SubsetAdvertPacket* pkt = reinterpret_cast<SubsetAdvertPacket*>( buf );
-	pkt->revision = htonl( this->revision );
+	pkt->revision_nr = htonl( this->revision_nr );
 
 	/* Append VLAN Info section */
 	for(auto vlan : vlans)

@@ -34,18 +34,18 @@ uint8_t Vlan8021Q::set_pcp(uint8_t pcp)
 	return pcp;
 }
 
-uint16_t Vlan8021Q::set_vlan_id(uint16_t vlan)
+uint16_t Vlan8021Q::set_vlan_id(uint16_t vlan_id)
 {
-	if (vlan > 0x0fff || vlan < 0)
+	if (vlan_id > 0x0fff || vlan_id < 0)
 		throw std::out_of_range("invalid vlan id");
 
-	uint8_t *bytearray = reinterpret_cast<uint8_t*>(&vlan);
+	uint8_t *bytearray = reinterpret_cast<uint8_t*>(&vlan_id);
 
 	uint16_t tmp = this->tci & 0x00f0;
 	this->bytearray[1] = bytearray[0];
 	this->bytearray[0] = bytearray[1];
 	this->tci |= tmp;
-	return vlan;
+	return vlan_id;
 }
 
 

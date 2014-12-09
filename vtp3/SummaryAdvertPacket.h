@@ -24,10 +24,10 @@ namespace VTP3
 	 */
 	struct SummaryAdvertPacket {
 			VTP3CommonHeader header;
-			uint32_t revision;
+			uint32_t revision_nr;
 			uint32_t updater_id;
 			uint8_t update_timestamp[TIMESTAMP_LENGTH];
-			uint8_t md5[MD5_LENGTH];
+			uint8_t md5_digest[MD5_LENGTH];
 
 			int send(Connection const& connection);
 	};

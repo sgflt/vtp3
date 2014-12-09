@@ -15,21 +15,22 @@
 namespace VTP3
 {
 
+	/* 802.1Q 32b header */
 	struct Vlan8021Q {
 		union {
-				uint16_t tci;
+				uint16_t tci; /* 1B, TCI - tag control information includes: PCP, CFI (DEI), VID */
 				uint8_t bytearray[2];
 		};
 		union {
 				uint16_t length;
-				uint16_t type;
+				uint16_t type;	/* 2B, TPID - tag protocol identifier (0x8100 for 802.1Q) */
 		};
 
 		void pack(Vlan8021Q const* vlan);
 
-		uint8_t set_pcp(uint8_t pcp);
-		uint8_t set_cfi(uint8_t cfi);
-		uint16_t set_vlan_id(uint16_t vlan_id);
+		uint8_t set_pcp(uint8_t pcp); /* 3b, PCP - Priority code point */
+		uint8_t set_cfi(uint8_t cfi); /* 1b, CFI (also called DEI) */
+		uint16_t set_vlan_id(uint16_t vlan_id); /* 12bit, VID - VLAN identifier (to which VLAN the frame belongs) */
 	};
 
 } /* namespace VTP3 */

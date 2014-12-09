@@ -20,7 +20,7 @@ int SummaryAdvertPacket::send(Connection const& connection)
 	SummaryAdvertPacket pkt;
 
 	std::memcpy(&pkt.header, &this->header, sizeof(this->header));
-	pkt.revision = htonl( this->revision );
+	pkt.revision_nr = htonl( this->revision_nr );
 	pkt.updater_id = htonl( this->updater_id );
 
 	return VTP3::send(connection, &pkt, sizeof(*this));
