@@ -13,6 +13,7 @@
 
 #include "common.h"
 #include "Vlan8021Q.h"
+#include "EthernetHeader.h"
 
 namespace VTP3
 {
