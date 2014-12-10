@@ -51,18 +51,19 @@ int main(int argc, char **argv)
 {
 	app_init(argc, argv);
 
+	//data structure with callbacks for new sniffing thread
 	thread_data td;
 	td.dev_name = argv[1];
-	td.advert_request_received = &advert_request_received;
-	td.subset_advert_received = &subset_advert_received;
-	td.summary_advert_received = &summary_advert_received;
+	td.summary_advert_recv = &summary_advert_received;
+	td.subset_advert_recv = &subset_advert_received;
+	td.advert_request_recv = &advert_request_received;
 
 	pthread_t receiving_thread;
 	pthread_create(&receiving_thread, NULL, init_pcap, &td);
 
-	//while(app_running){
+	while(app_running){
 		//inserting commands such as creating vlan, renaming vlan etc.
-	//}
+	}
 
 	pthread_join(receiving_thread, NULL);
 

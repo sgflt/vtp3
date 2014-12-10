@@ -36,12 +36,12 @@ atomic_bool loop_running;
 namespace VTP3{
 
 void (*summary_advert_received)(struct SummaryAdvertPacket *);
-void (*subset_advert_received)(struct SubsetAdvertPacket *);
+void (*subset_advert_received)(struct SubsetAdvertPacket *, std::vector<std::shared_ptr<VlanInfo>>);
 void (*advert_request_received)(struct AdvertRequestPacket *);
 
 	void process_summary_advert(int offset, const u_char *packet){
-		struct summary_advert_mask *mask;
 		SummaryAdvertPacket pkt_sum;
+		struct summary_advert_mask *mask;
 		mask = (struct summary_advert_mask *) (packet + offset);
 		pkt_sum.header.version = mask->version;
 		pkt_sum.header.code = mask->code;
@@ -56,9 +56,10 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 		summary_advert_received(&pkt_sum);
 	}
 
-	void process_subset_advert(uint16_t _frame_len, int offset, const u_char *packet){
+	void process_subset_advert(int payload_len, int offset, const u_char *packet){
 		struct subset_advert_mask *mask;
-		int frame_len = int(_frame_len);
+		int act_bytes = 0;
+		vector<shared_ptr<VlanInfo>> vlans;
 		SubsetAdvertPacket pkt_sub;
 		mask = (struct subset_advert_mask *) (packet + offset);
 		pkt_sub.header.version = mask->version;
@@ -68,29 +69,47 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 		memcpy(&pkt_sub.header.domain_name, &mask->domain_name, sizeof(pkt_sub.header.domain_name));
 		pkt_sub.revision_nr = htonl(*((int32_t *)(mask->revision_nr)));
 		offset += sizeof(struct subset_advert_mask);
+		act_bytes += sizeof(struct subset_advert_mask);
+		act_bytes += LLC_HEADER_SIZE;
 		//now should (packet + offset) point to the first VLAN Information (if available)
-		//the payload length = length(llc header) + length(vtp packet)
-//		while(true){
+		struct vlan_field_mask *vf_mask;
+		while(true){
 			//is this end of the packet?
-//			if(offset - LLCHeader == frame_len)
-//				break;
-			struct vlan_field_mask *vf_mask = (struct vlan_field_mask *) (packet + offset);
-			printf("%d\n",int(vf_mask->len));
-			printf("%d\n",int(vf_mask->status));
-			printf("%d\n",int(vf_mask->type));
-			printf("%d\n",int(vf_mask->name_len));
-			printf("%d\n",htons(*((uint16_t *)(vf_mask->vlan_id))));
-			printf("%d\n",htons(*((uint16_t *)(vf_mask->mtu_size))));
-			printf("0x%08x\n",htonl(*((uint32_t *)(vf_mask->index80211))));
+			if(payload_len == act_bytes)
+				break;
+			vf_mask = (struct vlan_field_mask *) (packet + offset);
+			shared_ptr<VlanInfo> vlan( new VlanInfo );
+			vlan->data.length = vf_mask->len;
+			vlan->data.status = vf_mask->status;
+			vlan->data.type = vf_mask->type;
+			vlan->data.name_length = vf_mask->name_len;
+			vlan->data.isl_vlan_id = htons(*((uint16_t *)(vf_mask->vlan_id)));
+			vlan->data.mtu_size = htons(*((uint16_t *)(vf_mask->mtu_size)));
+			vlan->data.index = htonl(*((uint32_t *)(vf_mask->index80211)));
+			vlan->name = unique_ptr<char>(new char[vf_mask->name_len+1]);
+			memcpy(vlan->name.get(), packet + offset + sizeof(struct vlan_field_mask), vf_mask->name_len+1);
+			vlan->name.get()[vf_mask->name_len] = '\0';
+			//push vlan
+			vlans.push_back(vlan);
+			//move to next vlan field
+			offset += vf_mask->len;
+			act_bytes += vf_mask->len;
+		}
 
-//		}
 
-
-		subset_advert_received(&pkt_sub);
+		subset_advert_received(&pkt_sub, vlans);
 	}
 
 	void process_advert_request(int offset, const u_char *packet){
 		AdvertRequestPacket pkt_adv;
+		struct advert_request_mask *mask;
+		mask = (struct advert_request_mask *) (packet + offset);
+		pkt_adv.header.version = mask->version;
+		pkt_adv.header.code = mask->code;
+		pkt_adv.header.reserved = mask->reserved;
+		pkt_adv.header.domain_len = mask->domain_len;
+		memcpy(&pkt_adv.header.domain_name, &mask->domain_name, sizeof(pkt_adv.header.domain_name));
+		pkt_adv.start = htonl(*((uint32_t *)(mask->start_value)));
 
 		advert_request_received(&pkt_adv);
 	}
@@ -127,28 +146,29 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 				break;
 			//subset advertisement
 			case 2:
-				process_subset_advert(frame_len, offset - VTP_MESSAGE_OFFSET, packet);
+				process_subset_advert(int(frame_len), offset - VTP_MESSAGE_OFFSET, packet);
 				break;
 			//advertisement request
 			case 3:
-				process_advert_request(offset, packet);
+				process_advert_request(offset - VTP_MESSAGE_OFFSET, packet);
 				break;
 			//takeover request/set
 			case 5:
-				cout << "> VTP packet received, but takeover messages are not supported yet" << endl;
+				cout << "** VTP packet received, but takeover messages are not supported yet" << endl << endl;
 				break;
 			//takeover response
 			case 6:
-				cout << "> VTP packet received, but takeover messages are not supported yet" << endl;
+				cout << "** VTP packet received, but takeover messages are not supported yet" << endl << endl;
 				break;
 			default:
-				cout << "> VTP packet received, but message type code is unknown: " << vtp_msg_code << endl;
+				cout << "** VTP packet received, but message type code is unknown: " << vtp_msg_code << endl << endl;;
 		}
 
 	}
 
 	void *init_pcap(void *d){
 		char *dev = ((thread_data *) d)->dev_name;
+
 	/*	summary_advert_received = ((thread_data *) d)->summary_advert_received;
 		subset_advert_received = ((thread_data *) d)->subset_advert_received;
 		advert_request_received = ((thread_data *) d)->advert_request_received;
@@ -167,7 +187,6 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 			exit(EXIT_FAILURE);
 		}
 
-		cout << "> packet sniffing has started!" << endl;
 		pcap_loop(handle, 0, got_packet, NULL);
 
 		pcap_close(handle);
