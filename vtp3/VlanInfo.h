@@ -12,6 +12,7 @@
 #include <cstdint>
 #include <memory>
 #include <vector>
+#include <ostream>
 
 #include "common.h"
 
@@ -36,6 +37,8 @@ namespace VTP3
 		size_t size(void);
 		size_t name_size(void);
 	};
+
+	std::ostream& operator<<(std::ostream& os, VlanInfo const& vinfo);
 
 } /* namespace VTP3 */
 

@@ -25,3 +25,10 @@ int AdvertRequestPacket::send(Connection const& connection)
 
 	return VTP3::send(connection, &pkt, sizeof(*this));
 }
+
+std::ostream& VTP3::operator<<(std::ostream& os, AdvertRequestPacket const& pkt)
+{
+	os << pkt.header << "\n"
+		<< "\tStart:\t" << pkt.start;
+	return os;
+}

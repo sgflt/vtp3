@@ -11,7 +11,7 @@
 #include <vector>
 #include <cstring>
 #include <memory>
-#include <iostream>
+#include <ostream>
 #include <array>
 
 #include "common.h"
@@ -55,4 +55,12 @@ int SubsetAdvertPacket::send(Connection const& connection, std::vector<std::shar
 	}
 
 	return VTP3::send(connection, buf, data_size);
+}
+
+std::ostream& VTP3::operator<<(std::ostream& os, SubsetAdvertPacket const& pkt)
+{
+	os << pkt.header << "\n"
+		<< "******************* Subset Advert Packet *********************\n"
+		<< "\tRevision:\t" << pkt.revision_nr;
+	return os;
 }

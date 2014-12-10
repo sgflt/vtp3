@@ -9,6 +9,7 @@
 #ifndef SUMMARYADVERTPACKET_H_
 #define SUMMARYADVERTPACKET_H_
 
+#include <ostream>
 
 #include "common.h"
 #include "Connection.h"
@@ -32,6 +33,8 @@ namespace VTP3
 
 			int send(Connection const& connection);
 	};
+
+	std::ostream& operator<<(std::ostream& os, SummaryAdvertPacket const& pkt);
 
 } /* namespace VTP3 */
 

@@ -11,7 +11,7 @@
 #include "SummaryAdvertPacket.h"
 #include "SubsetAdvertPacket.h"
 #include "AdvertRequestPacket.h"
-#include <pcap.h>
+//#include <pcap.h>
 
 namespace VTP3{
 

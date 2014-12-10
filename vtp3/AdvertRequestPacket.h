@@ -9,6 +9,8 @@
 #ifndef ADVERTREQUESTPACKET_H_
 #define ADVERTREQUESTPACKET_H_
 
+#include <ostream>
+
 #include "common.h"
 #include "Connection.h"
 #include "VTP3CommonHeader.h"
@@ -22,6 +24,7 @@ namespace VTP3
 		int send(Connection const& connection);
 	};
 
+	std::ostream& operator<<(std::ostream& os, AdvertRequestPacket const& pkt);
 } /* namespace VTP3 */
 
 #endif /* ADVERTREQUESTPACKET_H_ */

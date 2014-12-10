@@ -15,9 +15,9 @@
 #include <arpa/inet.h>
 
 #include "common.h"
-#include "VTP3CommonHeader.h"
 #include "VlanInfo.h"
 #include "Connection.h"
+#include "VTP3CommonHeader.h"
 
 namespace VTP3
 {
@@ -28,6 +28,8 @@ namespace VTP3
 
 		int send(Connection const& connection, std::vector<std::shared_ptr<VlanInfo>> vlans);
 	};
+
+	std::ostream& operator<<(std::ostream& os, SubsetAdvertPacket const& pkt);
 
 } /* namespace VTP3 */
 

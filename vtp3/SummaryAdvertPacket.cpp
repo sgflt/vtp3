@@ -25,3 +25,21 @@ int SummaryAdvertPacket::send(Connection const& connection)
 
 	return VTP3::send(connection, &pkt, sizeof(*this));
 }
+
+std::ostream& VTP3::operator<<(std::ostream& os, SummaryAdvertPacket const& pkt)
+{
+	os << pkt.header << "\n"
+		<< "******************* Summary Advert Packet *********************\n"
+		<< "\tRevision:\t" << pkt.revision_nr << "\n"
+		<< "\tUpdater id:\t" << pkt.updater_id << "\n"
+		<< "\tTimestamp:\t" << reinterpret_cast<const char*>(pkt.update_timestamp) << "\n"
+		<< "\tMD5 digest:\t";
+
+	for (int i = 0; i < MD5_LENGTH; ++i) {
+		os << pkt.md5_digest[i];
+	}
+
+	os << "\n";
+
+	return os;
+}

@@ -5,7 +5,7 @@
  *      Author: tomas
  */
 
-#include <pcap.h>
+//#include <pcap.h>
 #include <iostream>
 #include <iomanip>
 #include <atomic>
@@ -30,7 +30,7 @@
 
 using namespace std;
 
-pcap_t *handle;
+//pcap_t *handle;
 atomic_bool loop_running;
 
 namespace VTP3{
@@ -96,8 +96,8 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 	}
 
 	void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
-		if(!loop_running)
-			pcap_breakloop(handle);
+		/*if(!loop_running)
+			pcap_breakloop(handle);*/
 
 		int offset;
 		uint8_t vtp_msg_code;
@@ -149,15 +149,15 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 
 	void *init_pcap(void *d){
 		char *dev = ((thread_data *) d)->dev_name;
-		summary_advert_received = ((thread_data *) d)->summary_advert_received;
+	/*	summary_advert_received = ((thread_data *) d)->summary_advert_received;
 		subset_advert_received = ((thread_data *) d)->subset_advert_received;
 		advert_request_received = ((thread_data *) d)->advert_request_received;
 
 		char errbuf[PCAP_ERRBUF_SIZE];
 		loop_running = true;
-		handle = pcap_open_live(dev, SNAP_LEN, PROMISC_MODE, READ_TIME_OUT, errbuf);
+		handle = pcap_open_live(dev, SNAP_LEN, PROMISC_MODE, READ_TIME_OUT, errbuf);*/
 
-		if (handle == NULL) {
+		/*if (handle == NULL) {
 			cerr << "> couldn't open device " << errbuf << endl;
 			exit(EXIT_FAILURE);
 		}
@@ -177,7 +177,7 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 
 	void stop_pkt_receiving(){
 		loop_running = false;
-//		cout << "breaking pcap loop" << endl;
+//		cout << "breaking pcap loop" << endl;*/
 	}
 
 }
