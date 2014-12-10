@@ -38,43 +38,61 @@ namespace VTP3{
 			md5 += buf;
 		}
 
-		cout << "> SUMMARY ADVERT RECEIVED" << endl;
+		cout << "** SUMMARY ADVERT RECEIVED" << endl;
 		cout << "> \tVTP Version:\t\t" << int(pkt->header.version) << endl;
 		cout << "> \tCode:\t\t\t" << int(pkt->header.code) << endl;
 		cout << "> \tFollowers:\t\t" << int(pkt->header.followers) << endl;
 		cout << "> \tDomain length:\t\t" << int(pkt->header.domain_len) << endl;
 		cout << "> \tDomain name:\t\t" << pkt->header.domain_name << endl;
 		cout << "> \tRevision number:\t" << pkt->revision_nr << endl;
+		cout << "> \tUpdater identity:\t" << updater_id << endl;
 		cout << "> \tUpdate timestamp:\t" << timestamp << endl;
-		cout << "> \tUpdater ID:\t\t" << updater_id << endl;
 		cout << "> \tMD5 digest:\t\t" << md5 << endl;
 
 		cout << endl;
-//		cout << "> --SUMMARY ADVERT RECEIVED-----" << endl;
 	}
 
-	void subset_advert_received(SubsetAdvertPacket *pkt){
-		cout << "> SUBSET ADVERT RECEIVED" << endl;
+	void subset_advert_received(SubsetAdvertPacket *pkt, std::vector<std::shared_ptr<VlanInfo>> vlans){
+		char buf[64];
+
+		cout << "** SUBSET ADVERT RECEIVED" << endl;
 		cout << "> \tVTP Version:\t\t" << int(pkt->header.version) << endl;
 		cout << "> \tCode:\t\t\t" << int(pkt->header.code) << endl;
-		cout << "> \tDomain length:\t\t" << int(pkt->header.domain_len) << endl;
 		cout << "> \tSequence number:\t" << int(pkt->header.sequence_nr) << endl;
+		cout << "> \tDomain length:\t\t" << int(pkt->header.domain_len) << endl;
 		cout << "> \tDomain name:\t\t" << pkt->header.domain_name << endl;
 		cout << "> \tRevision number:\t" << pkt->revision_nr << endl;
 		cout << "> \tIncluded VLANs:" << endl;
+		for(vector<shared_ptr<VlanInfo>>::iterator it = vlans.begin() ; it != vlans.end() ; ++it){
+			cout << "> \t  Vlan: ";
+			cout << "Name = " << (*it)->name.get() << ", ";
+			cout << "Vlan ID = " << int((*it)->data.isl_vlan_id) << ", ";
+			cout << "Status = " << int((*it)->data.status) << ", ";
+			cout << "VLAN type = " << int((*it)->data.type) << ", ";
+			cout << "VLAN name len = " << int((*it)->data.name_length) << ", ";
+			cout << "MTU size = " << int((*it)->data.mtu_size) << ", ";
+			sprintf(buf, "0x%08x", (*it)->data.index);
+			cout << "Index = " << buf;
 
-		cout << endl;
-//		cout << "> --SUBSET ADVERT RECEIVED-----" << endl;
+			cout << endl;
+		}
+		if(vlans.size())
+			cout << endl;
 
 	}
 
 
 
 	void advert_request_received(AdvertRequestPacket *pkt){
-		cout << "> ADVERT REQUEST RECEIVED" << endl;
+		cout << "** ADVERT REQUEST RECEIVED" << endl;
+		cout << "> \tVTP Version:\t\t" << int(pkt->header.version) << endl;
+		cout << "> \tCode:\t\t\t" << int(pkt->header.code) << endl;
+		cout << "> \tFollowers:\t\t" << int(pkt->header.followers) << endl;
+		cout << "> \tDomain length:\t\t" << int(pkt->header.domain_len) << endl;
+		cout << "> \tDomain name:\t\t" << pkt->header.domain_name << endl;
+		cout << "> \tStart-value:\t\t" << pkt->start << endl;
 
 		cout << endl;
-//		cout << "> --ADVERT REQUEST RECEIVED-----" << endl;
 
 	}
 

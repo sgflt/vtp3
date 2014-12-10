@@ -46,12 +46,20 @@ struct vlan_field_mask {
 	u_char index80211[4];
 };
 
+struct advert_request_mask{
+	u_char version;
+	u_char code;
+	u_char reserved;
+	u_char domain_len;
+	u_char domain_name[32];
+	u_char start_value[4];
+};
 
 struct thread_data{
 	char *dev_name;
-	void (*summary_advert_received)(SummaryAdvertPacket *);
-	void (*subset_advert_received)(SubsetAdvertPacket *);
-	void (*advert_request_received)(AdvertRequestPacket *);
+	void (*summary_advert_recv)(SummaryAdvertPacket *);
+	void (*subset_advert_recv)(SubsetAdvertPacket *, std::vector<std::shared_ptr<VlanInfo>>);
+	void (*advert_request_recv)(AdvertRequestPacket *);
 };
 
 void process_advert_request(int, const u_char *);

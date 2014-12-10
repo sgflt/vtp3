@@ -11,11 +11,12 @@
 #include "SummaryAdvertPacket.h"
 #include "SubsetAdvertPacket.h"
 #include "AdvertRequestPacket.h"
+#include "VlanInfo.h"
 
 namespace VTP3{
 
 	void summary_advert_received(SummaryAdvertPacket *);
-	void subset_advert_received(SubsetAdvertPacket *);
+	void subset_advert_received(SubsetAdvertPacket *, std::vector<std::shared_ptr<VlanInfo>>);
 	void advert_request_received(AdvertRequestPacket *);
 
 }
