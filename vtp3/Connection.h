@@ -24,7 +24,7 @@ namespace VTP3
 			std::shared_ptr<VTP3::EthernetHeader> ethernet_header;
 			std::shared_ptr<VTP3::Vlan8021Q> vlan8021Q_header;
 
-			int socket(void);
+			int create_socket(void);
 			void create_header(void);
 	};
 }

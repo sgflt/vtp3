@@ -11,7 +11,6 @@
 #include "SummaryAdvertPacket.h"
 #include "SubsetAdvertPacket.h"
 #include "AdvertRequestPacket.h"
-//#include <pcap.h>
 
 namespace VTP3{
 
@@ -60,15 +59,17 @@ struct thread_data{
 	void (*summary_advert_recv)(SummaryAdvertPacket *);
 	void (*subset_advert_recv)(SubsetAdvertPacket *, std::vector<std::shared_ptr<VlanInfo>>);
 	void (*advert_request_recv)(AdvertRequestPacket *);
+	int sockfd;
 };
 
-void process_advert_request(int, const u_char *);
-void process_subset_advert(uint16_t, int, const u_char *);
-void process_summary_advert(int, u_char *);
-void *init_pcap(void *);
-void stop_pkt_receiving();
-void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+void process_advert_request_pkt(int, const u_char *);
+void process_subset_advert_pkt(uint16_t, int, const u_char *);
+void process_summary_advert_pkt(int, u_char *);
+void *pkt_receiving(void *);
 
+void got_packet(const u_char *packet);
+void set_sock_timeout(int sockfd);
+void stop_pkt_receiving();
 }
 
 

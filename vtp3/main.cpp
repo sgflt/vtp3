@@ -10,9 +10,9 @@
 #include <iostream>
 #include <cstring>
 #include <sys/msg.h>
+#include <unistd.h>
 #include <pthread.h>
 #include <csignal>
-#include <pcap.h>
 
 #include "common.h"
 #include "Connection.h"
@@ -31,10 +31,12 @@ bool app_running = true;
 
 
 void signal_handler(int signo){
-	//TODO what if user selects non-active device: it will work, but it will get stuck in the loop
-	stop_pkt_receiving(); //break receiving loop
-	app_running = false;
-	cout << "> waiting for one more packet to break sniffing loop" << endl;
+	if(signo == SIGINT){
+		stop_pkt_receiving();
+		app_running = false;
+
+		cout << "> press ENTER to exit" << endl;
+	}
 }
 
 void app_init(int argc, char **argv){
@@ -50,6 +52,14 @@ void app_init(int argc, char **argv){
 int main(int argc, char **argv)
 {
 	app_init(argc, argv);
+	string command;
+
+	Connection con;
+
+	// Open RAW create_socket
+	con.if_name = string(argv[1]);
+	con.create_socket();
+	con.create_header();
 
 	//data structure with callbacks for new sniffing thread
 	thread_data td;
@@ -57,23 +67,22 @@ int main(int argc, char **argv)
 	td.summary_advert_recv = &summary_advert_received;
 	td.subset_advert_recv = &subset_advert_received;
 	td.advert_request_recv = &advert_request_received;
+	td.sockfd = con.sockfd;
 
 	pthread_t receiving_thread;
-	pthread_create(&receiving_thread, NULL, init_pcap, &td);
+	pthread_create(&receiving_thread, NULL, pkt_receiving, &td);
 
 	while(app_running){
 		//inserting commands such as creating vlan, renaming vlan etc.
+		cout << ">";
+		getline(cin, command);
 	}
 
+
 	pthread_join(receiving_thread, NULL);
-
+	close(con.sockfd);
 	/*
-	Connection con;
 
-	// Open RAW socket
-	con.if_name = string(dev);
-	con.socket();
-	con.create_header();
 
 	con.vlan8021Q_header = shared_ptr<Vlan8021Q>(new Vlan8021Q);
 

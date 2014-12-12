@@ -57,7 +57,7 @@ int VTP3::socket(void)
 {
 	int sockfd;
 
-	if ( (sockfd = ::socket(AF_PACKET, SOCK_RAW, IPPROTO_RAW)) == -1) {
+	if ( (sockfd = ::socket(AF_PACKET, SOCK_RAW, /*IPPROTO_RAW*/htons(ETH_P_ALL))) == -1) {
 	    std::perror("Cannot open socket!");
 	}
 

@@ -12,7 +12,7 @@
 
 using namespace VTP3;
 
-int Connection::socket(void)
+int Connection::create_socket(void)
 {
 	return this->sockfd = VTP3::socket();
 }

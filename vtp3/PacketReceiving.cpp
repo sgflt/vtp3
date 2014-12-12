@@ -5,10 +5,10 @@
  *      Author: tomas
  */
 
-//#include <pcap.h>
 #include <iostream>
 #include <iomanip>
 #include <atomic>
+#include <cstring>
 
 #include "PacketReceiving.hpp"
 #include "common.h"
@@ -27,10 +27,11 @@
 #define VTP_VERSION_OFFSET 8
 #define VTP_MESSAGE_OFFSET 1
 #define LLC_HEADER_SIZE 8
+#define BUF_MAX_LEN 65536
 
 using namespace std;
 
-//pcap_t *handle;
+
 atomic_bool loop_running;
 
 namespace VTP3{
@@ -39,7 +40,7 @@ void (*summary_advert_received)(struct SummaryAdvertPacket *);
 void (*subset_advert_received)(struct SubsetAdvertPacket *, std::vector<std::shared_ptr<VlanInfo>>);
 void (*advert_request_received)(struct AdvertRequestPacket *);
 
-	void process_summary_advert(int offset, const u_char *packet){
+	void process_summary_advert_pkt(int offset, const u_char *packet){
 		SummaryAdvertPacket pkt_sum;
 		struct summary_advert_mask *mask;
 		mask = (struct summary_advert_mask *) (packet + offset);
@@ -56,7 +57,7 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 		summary_advert_received(&pkt_sum);
 	}
 
-	void process_subset_advert(int payload_len, int offset, const u_char *packet){
+	void process_subset_advert_pkt(int payload_len, int offset, const u_char *packet){
 		struct subset_advert_mask *mask;
 		int act_bytes = 0;
 		vector<shared_ptr<VlanInfo>> vlans;
@@ -100,7 +101,7 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 		subset_advert_received(&pkt_sub, vlans);
 	}
 
-	void process_advert_request(int offset, const u_char *packet){
+	void process_advert_request_pkt(int offset, const u_char *packet){
 		AdvertRequestPacket pkt_adv;
 		struct advert_request_mask *mask;
 		mask = (struct advert_request_mask *) (packet + offset);
@@ -114,10 +115,7 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 		advert_request_received(&pkt_adv);
 	}
 
-	void got_packet(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
-		/*if(!loop_running)
-			pcap_breakloop(handle);*/
-
+	void got_packet(const u_char *packet){
 		int offset;
 		uint8_t vtp_msg_code;
 		uint16_t frame_len;
@@ -142,15 +140,15 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 		switch(vtp_msg_code){
 			//summary advertisement
 			case 1:
-				process_summary_advert(offset - VTP_MESSAGE_OFFSET, packet);
+				process_summary_advert_pkt(offset - VTP_MESSAGE_OFFSET, packet);
 				break;
 			//subset advertisement
 			case 2:
-				process_subset_advert(int(frame_len), offset - VTP_MESSAGE_OFFSET, packet);
+				process_subset_advert_pkt(int(frame_len), offset - VTP_MESSAGE_OFFSET, packet);
 				break;
 			//advertisement request
 			case 3:
-				process_advert_request(offset - VTP_MESSAGE_OFFSET, packet);
+				process_advert_request_pkt(offset - VTP_MESSAGE_OFFSET, packet);
 				break;
 			//takeover request/set
 			case 5:
@@ -161,42 +159,52 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 				cout << "** VTP packet received, but takeover messages are not supported yet" << endl << endl;
 				break;
 			default:
-				cout << "** VTP packet received, but message type code is unknown: " << vtp_msg_code << endl << endl;;
+				cout << "** VTP packet received, but message type code is unknown: " << vtp_msg_code << endl << endl;
 		}
 
 	}
 
-	void *init_pcap(void *d){
-		char *dev = ((thread_data *) d)->dev_name;
-
-	/*	summary_advert_received = ((thread_data *) d)->summary_advert_received;
-		subset_advert_received = ((thread_data *) d)->subset_advert_received;
-		advert_request_received = ((thread_data *) d)->advert_request_received;
-
-		char errbuf[PCAP_ERRBUF_SIZE];
+	void *pkt_receiving(void *d){
+		summary_advert_received = ((thread_data *) d)->summary_advert_recv;
+		subset_advert_received = ((thread_data *) d)->subset_advert_recv;
+		advert_request_received = ((thread_data *) d)->advert_request_recv;
+		int sockfd = ((thread_data *) d)->sockfd, data_size, saddr_size;
 		loop_running = true;
-		handle = pcap_open_live(dev, SNAP_LEN, PROMISC_MODE, READ_TIME_OUT, errbuf);*/
+		u_char buf[BUF_MAX_LEN];
+		struct sockaddr saddr;
+		saddr_size = sizeof saddr;
+		set_sock_timeout(sockfd);
 
-		/*if (handle == NULL) {
-			cerr << "> couldn't open device " << errbuf << endl;
-			exit(EXIT_FAILURE);
+		while(loop_running){
+			data_size = recvfrom(sockfd, buf, BUF_MAX_LEN, 0, &saddr, (socklen_t *)&saddr_size);
+			if(data_size < 0){
+				if(errno == EAGAIN){
+//					cout << "> timeout" << endl;
+					continue;
+				}
+				else{
+					cerr << "> recvfrom failed: " << strerror(errno) << endl;
+					break;
+				}
+			}
+//			cout << "packet received, len: " << data_size << endl;
+			got_packet(buf);
 		}
-		//ethernet device test
-		if (pcap_datalink(handle) != DLT_EN10MB) {
-			cerr << "> '" << dev << "' is not an Ethernet device" << endl;
-			exit(EXIT_FAILURE);
-		}
 
-		pcap_loop(handle, 0, got_packet, NULL);
 
-		pcap_close(handle);
 
 		return NULL;
 	}
 
 	void stop_pkt_receiving(){
 		loop_running = false;
-//		cout << "breaking pcap loop" << endl;*/
+	}
+
+	void set_sock_timeout(int sockfd){
+		struct timeval tv;
+		tv.tv_sec = 2;
+		tv.tv_usec = 0;
+		setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &tv, sizeof(struct timeval));
 	}
 
 }
