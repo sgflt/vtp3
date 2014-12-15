@@ -54,7 +54,7 @@ struct advert_request_mask{
 	u_char start_value[4];
 };
 
-struct thread_data{
+struct sniffing_data{
 	char *dev_name;
 	void (*summary_advert_recv)(SummaryAdvertPacket *);
 	void (*subset_advert_recv)(SubsetAdvertPacket *, std::vector<std::shared_ptr<VlanInfo>>);
@@ -65,7 +65,7 @@ struct thread_data{
 void process_advert_request_pkt(int, const u_char *);
 void process_subset_advert_pkt(uint16_t, int, const u_char *);
 void process_summary_advert_pkt(int, u_char *);
-void *pkt_receiving(void *);
+void *pkt_receiving(struct sniffing_data *);
 
 void got_packet(const u_char *packet);
 void set_sock_timeout(int sockfd);

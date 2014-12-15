@@ -9,6 +9,8 @@
 #include <iomanip>
 #include <atomic>
 #include <cstring>
+#include <unistd.h>
+#include <fcntl.h>
 
 #include "PacketReceiving.hpp"
 #include "common.h"
@@ -164,19 +166,24 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 
 	}
 
-	void *pkt_receiving(void *d){
-		summary_advert_received = ((thread_data *) d)->summary_advert_recv;
-		subset_advert_received = ((thread_data *) d)->subset_advert_recv;
-		advert_request_received = ((thread_data *) d)->advert_request_recv;
-		int sockfd = ((thread_data *) d)->sockfd, data_size, saddr_size;
+	void *pkt_receiving(struct sniffing_data *sd){
+		summary_advert_received = sd->summary_advert_recv;
+		subset_advert_received = sd->subset_advert_recv;
+		advert_request_received = sd->advert_request_recv;
+		int sockfd = sd->sockfd, data_size, saddr_size;
 		loop_running = true;
 		u_char buf[BUF_MAX_LEN];
 		struct sockaddr saddr;
 		saddr_size = sizeof saddr;
 		set_sock_timeout(sockfd);
+		fcntl(sockfd, F_SETFL, fcntl(sockfd, F_GETFL) | O_NONBLOCK);
 
+		cout << "> listening..." << endl;
 		while(loop_running){
 			data_size = recvfrom(sockfd, buf, BUF_MAX_LEN, 0, &saddr, (socklen_t *)&saddr_size);
+			if(data_size == 0)
+				sleep(2);
+
 			if(data_size < 0){
 				if(errno == EAGAIN){
 //					cout << "> timeout" << endl;
@@ -190,9 +197,6 @@ void (*advert_request_received)(struct AdvertRequestPacket *);
 //			cout << "packet received, len: " << data_size << endl;
 			got_packet(buf);
 		}
-
-
-
 		return NULL;
 	}
 

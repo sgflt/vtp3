@@ -8,13 +8,17 @@
 #include "SummaryAdvertPacket.h"
 #include "SubsetAdvertPacket.h"
 #include "AdvertRequestPacket.h"
+#include "Constants.hpp"
+#include "FileUtility.hpp"
 
 #include <iostream>
 #include <sys/time.h>
 #include <sstream>
+#include <cstring>
 
 
 using namespace std;
+
 
 
 namespace VTP3{
@@ -24,6 +28,10 @@ namespace VTP3{
 
 
 	void summary_advert_received(SummaryAdvertPacket *pkt){
+		if(strcmp((char *) (pkt->header.domain_name), getDomainName().c_str()) != 0)
+			//drop packets from different domain
+			return;
+
 		char buf[128];
 		uint8_t *tmp;
 		tmp = pkt->update_timestamp;
@@ -53,6 +61,10 @@ namespace VTP3{
 	}
 
 	void subset_advert_received(SubsetAdvertPacket *pkt, std::vector<std::shared_ptr<VlanInfo>> vlans){
+		if(strcmp((char *) (pkt->header.domain_name), getDomainPassword().c_str()) != 0)
+			//drop packets from different domain
+			return;
+
 		char buf[64];
 
 		cout << "** SUBSET ADVERT RECEIVED" << endl;
@@ -79,11 +91,17 @@ namespace VTP3{
 		if(vlans.size())
 			cout << endl;
 
+		writeVlansToFile(vlans);
+
 	}
 
 
 
 	void advert_request_received(AdvertRequestPacket *pkt){
+		if(strcmp((char *) (pkt->header.domain_name), getDomainName().c_str()) != 0)
+			//drop packets from different domain
+			return;
+
 		cout << "** ADVERT REQUEST RECEIVED" << endl;
 		cout << "> \tVTP Version:\t\t" << int(pkt->header.version) << endl;
 		cout << "> \tCode:\t\t\t" << int(pkt->header.code) << endl;

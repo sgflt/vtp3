@@ -23,11 +23,14 @@
 #include "SubsetAdvertPacket.h"
 #include "Vlan8021Q.h"
 #include "PacketReceiving.hpp"
+#include "Constants.hpp"
 
 using namespace std;
 using namespace VTP3;
 
 bool app_running = true;
+bool client_mode = true;
+int rcv_sockfd;
 
 
 void signal_handler(int signo){
@@ -35,7 +38,12 @@ void signal_handler(int signo){
 		stop_pkt_receiving();
 		app_running = false;
 
-		cout << "> press ENTER to exit" << endl;
+		if(client_mode)
+			exit(EXIT_SUCCESS);
+		else{
+			close(rcv_sockfd);
+			exit(EXIT_SUCCESS);
+		}
 	}
 }
 
@@ -46,41 +54,50 @@ void app_init(int argc, char **argv){
 		cerr << "> first argument is missing: device name" << endl;
 		exit(EXIT_FAILURE);
 	}
+
+	if(argc == 3){
+		if(strcmp(argv[2],"-s") == 0)
+			client_mode = false;
+		else
+			cout << "> unknown parameter '" << argv[2] << "', type -s for starting as server" << endl;
+	}
 }
 
 
 int main(int argc, char **argv)
 {
 	app_init(argc, argv);
+
 	string command;
-
 	Connection con;
+	struct sniffing_data sd;
 
-	// Open RAW create_socket
+	// Open RAW create_socket, this socket is closed in pkt_receiving method
 	con.if_name = string(argv[1]);
 	con.create_socket();
 	con.create_header();
+	rcv_sockfd = con.sockfd;
 
-	//data structure with callbacks for new sniffing thread
-	thread_data td;
-	td.dev_name = argv[1];
-	td.summary_advert_recv = &summary_advert_received;
-	td.subset_advert_recv = &subset_advert_received;
-	td.advert_request_recv = &advert_request_received;
-	td.sockfd = con.sockfd;
+	if(client_mode){
+		while(app_running){
+			//inserting commands such as creating vlan, renaming vlan etc.
+			cout << ">";
+			getline(cin, command);
 
-	pthread_t receiving_thread;
-	pthread_create(&receiving_thread, NULL, pkt_receiving, &td);
-
-	while(app_running){
-		//inserting commands such as creating vlan, renaming vlan etc.
-		cout << ">";
-		getline(cin, command);
+			//do sth
+		}
+	}
+	else{
+		sd.dev_name = argv[1];
+		sd.summary_advert_recv = &summary_advert_received;
+		sd.subset_advert_recv = &subset_advert_received;
+		sd.advert_request_recv = &advert_request_received;
+		sd.sockfd = con.sockfd;
+		pkt_receiving(&sd);
 	}
 
 
-	pthread_join(receiving_thread, NULL);
-	close(con.sockfd);
+
 	/*
 
 
