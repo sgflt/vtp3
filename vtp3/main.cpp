@@ -24,12 +24,12 @@
 #include "Vlan8021Q.h"
 #include "PacketReceiving.hpp"
 #include "Constants.hpp"
+#include "FileUtility.hpp"
 
-using namespace std;
 using namespace VTP3;
 
 bool app_running = true;
-bool client_mode = true;
+bool server_mode = false;
 int rcv_sockfd;
 
 
@@ -38,7 +38,7 @@ void signal_handler(int signo){
 		stop_pkt_receiving();
 		app_running = false;
 
-		if(client_mode)
+		if(!server_mode)
 			exit(EXIT_SUCCESS);
 		else{
 			close(rcv_sockfd);
@@ -51,15 +51,22 @@ void app_init(int argc, char **argv){
 	signal(SIGINT, signal_handler);
 
 	if(argc == 1){
-		cerr << "> first argument is missing: device name" << endl;
+		std::cerr << "> first argument is missing: device name" << std::endl;
 		exit(EXIT_FAILURE);
 	}
 
+	VTP3::vlan_file = "vlans_db.txt";
+	VTP3::domain_name = "test";
+	VTP3::domain_password = "";
+
+	//try to load domain name&pass from vlan_file
+	loadDomainData();
+
 	if(argc == 3){
 		if(strcmp(argv[2],"-s") == 0)
-			client_mode = false;
+			server_mode = true;
 		else
-			cout << "> unknown parameter '" << argv[2] << "', type -s for starting as server" << endl;
+			std::cout << "> unknown parameter '" << argv[2] << "', type -s for starting as server" << std::endl;
 	}
 }
 
@@ -68,32 +75,32 @@ int main(int argc, char **argv)
 {
 	app_init(argc, argv);
 
-	string command;
+	std::string command;
 	Connection con;
 	struct sniffing_data sd;
 
 	// Open RAW create_socket, this socket is closed in pkt_receiving method
-	con.if_name = string(argv[1]);
+	con.if_name = std::string(argv[1]);
 	con.create_socket();
 	con.create_header();
 	rcv_sockfd = con.sockfd;
 
-	if(client_mode){
-		while(app_running){
-			//inserting commands such as creating vlan, renaming vlan etc.
-			cout << ">";
-			getline(cin, command);
-
-			//do sth
-		}
-	}
-	else{
+	if(server_mode){
 		sd.dev_name = argv[1];
 		sd.summary_advert_recv = &summary_advert_received;
 		sd.subset_advert_recv = &subset_advert_received;
 		sd.advert_request_recv = &advert_request_received;
 		sd.sockfd = con.sockfd;
 		pkt_receiving(&sd);
+	}
+	else{
+		while(app_running){
+			//interactive mode
+			std::cout << ">";
+			std::getline(std::cin, command);
+
+			//do sth
+		}
 	}
 
 

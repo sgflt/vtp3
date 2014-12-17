@@ -16,6 +16,7 @@
 namespace VTP3{
 
 void writeVlansToFile(std::vector<std::shared_ptr<VlanInfo>> vlans);
+void loadDomainData();
 
 }
 

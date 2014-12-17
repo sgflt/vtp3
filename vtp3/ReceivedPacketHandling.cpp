@@ -23,12 +23,13 @@ using namespace std;
 
 namespace VTP3{
 
+string domain_name;
 
 	/* CALLBACKS for each vtp message type  */
 
 
 	void summary_advert_received(SummaryAdvertPacket *pkt){
-		if(strcmp((char *) (pkt->header.domain_name), getDomainName().c_str()) != 0)
+		if(strcmp((char *) (pkt->header.domain_name), domain_name.c_str()) != 0)
 			//drop packets from different domain
 			return;
 
@@ -61,10 +62,9 @@ namespace VTP3{
 	}
 
 	void subset_advert_received(SubsetAdvertPacket *pkt, std::vector<std::shared_ptr<VlanInfo>> vlans){
-		if(strcmp((char *) (pkt->header.domain_name), getDomainPassword().c_str()) != 0)
+		if(strcmp((char *) (pkt->header.domain_name), domain_name.c_str()) != 0)
 			//drop packets from different domain
 			return;
-
 		char buf[64];
 
 		cout << "** SUBSET ADVERT RECEIVED" << endl;
@@ -98,7 +98,7 @@ namespace VTP3{
 
 
 	void advert_request_received(AdvertRequestPacket *pkt){
-		if(strcmp((char *) (pkt->header.domain_name), getDomainName().c_str()) != 0)
+		if(strcmp((char *) (pkt->header.domain_name), domain_name.c_str()) != 0)
 			//drop packets from different domain
 			return;
 

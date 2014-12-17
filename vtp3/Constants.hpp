@@ -12,9 +12,9 @@
 
 namespace VTP3{
 
-std::string getVlansFileName();
-std::string getDomainName();
-std::string getDomainPassword();
+extern std::string vlan_file;
+extern std::string domain_name;
+extern std::string domain_password;
 
 }
 
